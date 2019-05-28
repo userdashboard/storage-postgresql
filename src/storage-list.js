@@ -2,7 +2,7 @@ const connectionString = process.env.DATABASE_URL || 'postgres://localhost:5432/
 const configParse = require('pg-connection-string').parse
 const connectionConfig = configParse(connectionString)
 const pg = require('pg')
-const pool = new pg.Pool()
+const pool = new pg.Pool(connectionConfig)
 const Storage = require('./storage.js')
 const util = require('util')
 
@@ -16,10 +16,10 @@ module.exports = {
 }
 
 function exists(path, itemid, callback) {
-  return pool.connect(connectionConfig, (error, client, done) => {
+  return pool.connect((error, client, done) => {
     if(error){
       if (process.env.DEBUG_ERRORS){ 
-          console.log('postgres.storage', error)
+        console.log('postgres.storage', error)
       }
       return callback(error)
     } 
@@ -38,7 +38,7 @@ function add(path, itemid, callback) {
     if (existing) {
       return callback()
     }
-    return pool.connect(connectionConfig, (error, client, done) => {
+    return pool.connect((error, client, done) => {
       if (error) {
         if (process.env.DEBUG_ERRORS) {
           console.log('postgres.storage', error)
@@ -54,7 +54,7 @@ function add(path, itemid, callback) {
 }
 
 function count(path, callback) {
-  return pool.connect(connectionConfig, (error, client, done) => {
+  return pool.connect((error, client, done) => {
     if (error) {
       if (process.env.DEBUG_ERRORS) {
         console.log('postgres.storage', error)
@@ -69,7 +69,7 @@ function count(path, callback) {
 }
 
 function listAll(path, callback) {
-  return pool.connect(connectionConfig, (error, client, done) => {
+  return pool.connect((error, client, done) => {
     if (error) {
       if (process.env.DEBUG_ERRORS) {
         console.log('postgres.storage', error)
@@ -94,7 +94,7 @@ function list(path, offset, pageSize, callback) {
   if (offset && offset >= pageSize) {
     throw new Error('invalid-offset')
   }
-  return pool.connect(connectionConfig, (error, client, done) => {
+  return pool.connect((error, client, done) => {
     if (error) {
       if (process.env.DEBUG_ERRORS) {
         console.log('postgres.storage', error)
