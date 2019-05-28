@@ -33,14 +33,14 @@ async function count(path) {
 
 async function listAll(path) {
   const result = await pool.query('SELECT objectid FROM lists WHERE path=$1 ORDER BY created DESC', [path])
-  if (!result.rows || !result.rows.length) {
+  if (!result || !result.rows || !result.rows.length) {
     return
   }
   const data = []
   for (const row of result.rows) {
     data.push(row.objectid)
   }
-  return callback(null, data)
+  return data
 }
 
 async function list(path, offset, pageSize) {
@@ -68,5 +68,4 @@ async function list(path, offset, pageSize) {
 async function remove(path, objectid) {
   objectid = objectid.toString()
   await pool.query('DELETE FROM lists WHERE objectid=$1', [objectid])
-  return
 }
