@@ -1,0 +1,19 @@
+{
+  "dependencies": {
+    "pg": "^7.11.0"
+  },
+  "deprecated": false,
+  "description": "Use PostgreSQL as storage for Dashboard",
+  "engine": {
+    "node": "8.1.14",
+    "npm": "5.0.3"
+  },
+  "license": "SPDX(MIT OR Unlicense)",
+  "main": "index.js",
+  "name": "@userappstore/storage-postgresql",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/userappstore/storage-postgresql.git"
+  },
+  "version": "1.0.0"
+}
