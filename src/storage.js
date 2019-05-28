@@ -1,5 +1,6 @@
 const connectionString = process.env.DATABASE_URL || 'postgres://localhost:5432/postgres'
-const pg = require("pg")
+const pg = require('pg')
+const pool = new pg.Pool()
 const util = require('util')
 
 module.exports = {
@@ -19,7 +20,7 @@ function exists (path, callback) {
   if (path.indexOf('/') === path.length - 1) {
     throw new Error('invalid-file')
   }
-  return pg.connect(connectionString, (error, client, done) => {
+  return pool.connect(connectionString, (error, client, done) => {
     if (error) {
       if (process.env.DEBUG_ERRORS) {
         console.log('postgres.storage', error)
@@ -43,7 +44,7 @@ function deleteFile(path, callback) {
   if (path.indexOf('/') === path.length - 1) {
     throw new Error('invalid-file')
   }
-  return pg.connect(connectionString, (error, client, done) => {
+  return pool.connect(connectionString, (error, client, done) => {
     if (error) {
       if (process.env.DEBUG_ERRORS) {
         console.log('postgres.storage', error)
@@ -67,7 +68,7 @@ function write(file, contents, callback) {
   if (!contents && contents !== '') {
     throw new Error('invalid-contents')
   }
-  return pg.connect(connectionString, (error, client, done) => {
+  return pool.connect(connectionString, (error, client, done) => {
     if (error) {
       if (process.env.DEBUG_ERRORS) {
         console.log('postgres.storage', error)
@@ -92,7 +93,7 @@ function writeImage(file, buffer, callback) {
   if (!buffer || !buffer.length) {
     throw new Error('invalid-buffer')
   } 
-  return pg.connect(connectionString, (error, client, done) => {
+  return pool.connect(connectionString, (error, client, done) => {
     if (error) {
       if (process.env.DEBUG_ERRORS) {
         console.log('postgres.storage', error)
@@ -114,7 +115,7 @@ function read(file, callback) {
   if (!file) {
     throw new Error('invalid-file')
   }
-  return pg.connect(connectionString, (error, client, done) => {
+  return pool.connect(connectionString, (error, client, done) => {
     if (error) {
       if (process.env.DEBUG_ERRORS) {
         console.log('postgres.storage', error)
@@ -163,7 +164,7 @@ function readImage(file, callback) {
   if (!file) {
     throw new Error('invalid-file')
   }
-  return pg.connect(connectionString, (error, client, done) => {
+  return pool.connect(connectionString, (error, client, done) => {
     if (error) {
       if (process.env.DEBUG_ERRORS) {
         console.log('postgres.storage', error)
