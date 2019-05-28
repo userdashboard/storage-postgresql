@@ -6,8 +6,9 @@ create table lists (
 )
 
 create table objects (
+  path varchar(1000),
   objectid varchar(1000) primary key,
-  blob binary
+  blob bytea
 )
 
-create index lists_path on lists(path, objectid)
+create index on lists(path, objectid)
