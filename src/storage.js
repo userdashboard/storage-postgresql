@@ -1,6 +1,5 @@
 const connectionString = process.env.DATABASE_URL || 'postgres://localhost:5432/postgres'
 const pg = require("pg")
-const Storage = require('./storage.js')
 const util = require('util')
 
 module.exports = {
