@@ -1,14 +1,15 @@
-create table lists (
-  listid varchar(1000) primary key,
-  path varchar(1000),
-  objectid varchar(1000),
-  created timestamp with time zone default now()  
-)
+CREATE TABLE lists (
+  listid BIGSERIAL PRIMARY KEY,
+  path VARCHAR(1000),
+  objectid VARCHAR(1000),
+  created TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
 
-create table objects (
-  path varchar(1000),
-  objectid varchar(1000) primary key,
-  blob bytea
-)
+CREATE TABLE objects (
+  fullpath varchar(1000) PRIMARY KEY,
+  blob BYTEA,
+  created TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
 
-create index on lists(path, objectid)
+CREATE INDEX ON lists(path);
+CREATE INDEX ON lists(objectid);
