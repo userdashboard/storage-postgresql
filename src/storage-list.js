@@ -3,87 +3,47 @@ const configParse = require('pg-connection-string').parse
 const connectionConfig = configParse(connectionString)
 const pg = require('pg')
 const pool = new pg.Pool(connectionConfig)
-const Storage = require('./storage.js')
-const util = require('util')
 
 module.exports = {
-  add: util.promisify(add),
-  count: util.promisify(count),
-  exists: util.promisify(exists),
-  list: util.promisify(list),
-  listAll: util.promisify(listAll),
+  add,
+  count,
+  exists,
+  list,
+  listAll,
   remove
 }
 
-function exists(path, itemid, callback) {
-  return pool.connect((error, client, done) => {
-    if(error){
-      if (process.env.DEBUG_ERRORS){ 
-        console.log('postgres.storage', error)
-      }
-      return callback(error)
-    } 
-    return client.query('SELECT * FROM objects WHERE path=$1 AND itemid=$2', [path, itemid], (error, result) => {
-      done()
-      return callback(error, result.count === 1)
-    })
-  })
+async function exists(path, objectid) {
+  const result = await pool.query('SELECT EXISTS(SELECT 1 FROM lists WHERE path=$1 AND objectid=$2)', [path, objectid])
+  return result && result.rows && result.rows.length ? result.rows[0].exists : false
 }
 
-function add(path, itemid, callback) {
-  return exists(path, itemid, (error, existing) => {
-    if (error) {
-      return callback(error)
-    }
-    if (existing) {
-      return callback()
-    }
-    return pool.connect((error, client, done) => {
-      if (error) {
-        if (process.env.DEBUG_ERRORS) {
-          console.log('postgres.storage', error)
-        }
-        return callback(error)
-      }
-      return client.query('INSERT INTO lists(path, objectid) VALUES ($1, $2)', [path, itemid], (error, result) => {
-        done()
-        return callback(error, result)
-      })
-    })
-  })
+async function add(path, objectid) {
+  const existing = await exists(path, objectid)
+  if (existing) {
+    return
+  }
+  await pool.query('INSERT INTO lists(path, objectid) VALUES ($1, $2)', [path, objectid])
 }
 
-function count(path, callback) {
-  return pool.connect((error, client, done) => {
-    if (error) {
-      if (process.env.DEBUG_ERRORS) {
-        console.log('postgres.storage', error)
-      }
-      return callback(error)
-    }
-    return client.query('SELECT COUNT(*) FROM lists WHERE path=$1', [path], (error, result) => {
-      done()
-      return callback(error, result.count)
-    })
-  })
+async function count(path) {
+  const result = await pool.query('SELECT COUNT(*) FROM lists WHERE path=$1', [path])
+  return result && result.rows && result.rows.length ? parseInt(result.rows[0].count, 10) : 0
 }
 
-function listAll(path, callback) {
-  return pool.connect((error, client, done) => {
-    if (error) {
-      if (process.env.DEBUG_ERRORS) {
-        console.log('postgres.storage', error)
-      }
-      return callback(error)
-    }
-    return client.query('SELECT * FROM lists WHERE path=$1 ORDER BY created DESC', [path], (error, result) => {
-      done()
-      return callback(error, result.rows)
-    })
-  })
+async function listAll(path) {
+  const result = await pool.query('SELECT objectid FROM lists WHERE path=$1 ORDER BY created DESC', [path])
+  if (!result.rows || !result.rows.length) {
+    return
+  }
+  const data = []
+  for (const row of result.rows) {
+    data.push(row.objectid)
+  }
+  return callback(null, data)
 }
 
-function list(path, offset, pageSize, callback) {
+async function list(path, offset, pageSize) {
   offset = offset || 0
   if (pageSize === null || pageSize === undefined) {
     pageSize = global.pageSize
@@ -94,20 +54,19 @@ function list(path, offset, pageSize, callback) {
   if (offset && offset >= pageSize) {
     throw new Error('invalid-offset')
   }
-  return pool.connect((error, client, done) => {
-    if (error) {
-      if (process.env.DEBUG_ERRORS) {
-        console.log('postgres.storage', error)
-      }
-      return callback(error)
-    }
-    return client.query(`SELECT * FROM lists WHERE path=$1 ORDER BY created DESC LIMIT ${pageSize} OFFSET ${offset}`, [path], (error, result) => {
-      done()
-      return callback(error, result.rows)
-    })
-  })
+  const result = await pool.query(`SELECT objectid FROM lists WHERE path=$1 ORDER BY created DESC LIMIT ${pageSize} OFFSET ${offset}`, [path])
+  if (!result.rows || !result.rows.length) {
+    return
+  }
+  const data = []
+  for (const row of result.rows) {
+    data.push(row.objectid)
+  }
+  return data
 }
 
-function remove(path, itemid, callback) {
-  return Storage.client.lrem(path, 1, itemid, callback)
+async function remove(path, objectid) {
+  objectid = objectid.toString()
+  await pool.query('DELETE FROM lists WHERE objectid=$1', [objectid])
+  return
 }

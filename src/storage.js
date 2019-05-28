@@ -3,180 +3,107 @@ const configParse = require('pg-connection-string').parse
 const connectionConfig = configParse(connectionString)
 const pg = require('pg')
 const pool = new pg.Pool(connectionConfig)
-const util = require('util')
 
 module.exports = {
-  exists: util.promisify(exists),
-  read: util.promisify(read),
-  readMany: util.promisify(readMany),
-  readImage: util.promisify(readImage),
-  write: util.promisify(write),
-  writeImage: util.promisify(writeImage),
-  deleteFile: util.promisify(deleteFile)
+  exists,
+  read,
+  readMany,
+  readImage,
+  write,
+  writeImage,
+  deleteFile
 }
 
-function exists (path, callback) {
+async function exists(path) {
   if (!path) {
     throw new Error('invalid-file')
   }
   if (path.indexOf('/') === path.length - 1) {
     throw new Error('invalid-file')
   }
-  return pool.connect((error, client, done) => {
-    if (error) {
-      if (process.env.DEBUG_ERRORS) {
-        console.log('postgres.storage', error)
-      }
-      return callback(error)
-    }
-    const pathParts = path.split('/')
-    const objectid = pathParts.pop()
-    const truncatedPath = pathParts.join('/')
-    return client.query('SELECT exists FROM objects WHERE path=$1 AND objectid=$2', [truncatedPath, objectid], (error, result) => {
-      done()
-      return callback(error, result ? result.count === 1 : null)
-    })
-  })
+  const result = await pool.query('SELECT EXISTS(SELECT 1 FROM objects WHERE fullpath=$1)', [path])
+  return result && result.rows && result.rows.length ? result.rows[0].exists : null
 }
 
-function deleteFile(path, callback) {
+async function deleteFile(path) {
   if (!path) {
     throw new Error('invalid-file')
   }
   if (path.indexOf('/') === path.length - 1) {
     throw new Error('invalid-file')
   }
-  return pool.connect((error, client, done) => {
-    if (error) {
-      if (process.env.DEBUG_ERRORS) {
-        console.log('postgres.storage', error)
-      }
-      return callback(error)
-    }
-    const pathParts = path.split('/')
-    const objectid = pathParts.pop()
-    const truncatedPath = pathParts.join('/')
-    return client.query('DELETE FROM objects WHERE path=$1 AND objectid=$2', [truncatedPath, objectid], (error, result) => {
-      done()
-      return callback(error, result ? result.count === 1 : null)
-    })
-  })
+  const result = await pool.query('DELETE FROM objects WHERE fullpath=$1', [path])
+  return result ? result.count === 1 : null
 }
 
-function write(file, contents, callback) {
+async function write(file, contents) {
   if (!file) {
     throw new Error('invalid-file')
   }
   if (!contents && contents !== '') {
     throw new Error('invalid-contents')
   }
-  return pool.connect((error, client, done) => {
-    if (error) {
-      if (process.env.DEBUG_ERRORS) {
-        console.log('postgres.storage', error)
-      }
-      return callback(error)
-    }
-    const pathParts = path.split('/')
-    const objectid = pathParts.pop()
-    const truncatedPath = pathParts.join('/')
-    return client.query('INSERT INTO objects(path, objectid, blob) VALUES($1, $2, $3) ON CONFLICT(objectid) DO UPDATE SET blob=$3', 
-      [truncatedPath, objectid, contents], (error, result) => {
-      done()
-      return callback(error, result ? result.count === 1 : null)
-    })
-  })
+  if (typeof (contents) !== 'number' && typeof (contents) !== 'string') {
+    contents = JSON.stringify(contents)
+  }
+  contents = Buffer.isBuffer(contents) ? contents : new Buffer(contents)
+  contents = `\\x${contents.toString('hex')}`
+  await pool.query('INSERT INTO objects(fullpath, blob) VALUES($1, $2) ON CONFLICT(fullpath) DO UPDATE SET blob=$2', [file, contents])
 }
 
-function writeImage(file, buffer, callback) {
+async function writeImage(file, buffer) {
   if (!file) {
     throw new Error('invalid-file')
   }
   if (!buffer || !buffer.length) {
     throw new Error('invalid-buffer')
-  } 
-  return pool.connect((error, client, done) => {
-    if (error) {
-      if (process.env.DEBUG_ERRORS) {
-        console.log('postgres.storage', error)
-      }
-      return callback(error)
-    }
-    const pathParts = path.split('/')
-    const objectid = pathParts.pop()
-    const truncatedPath = pathParts.join('/')
-    return client.query('INSERT INTO objects(path, objectid, blob) VALUES($1, $2, $3) ON CONFLICT(objectid) DO UPDATE SET blob=$3',
-      [truncatedPath, objectid, buffer], (error, result) => {
-        done()
-        return callback(error, result ? result.count === 1 : null)
-      })
-  })
+  }
+  const result = await pool.query('INSERT INTO objects(fullpath, blob) VALUES($1, $2) ON CONFLICT(fullpath) DO UPDATE SET blob=$2', [file, buffer])
+  return result ? result.count === 1 : null
 }
 
-function read(file, callback) {
+async function read(file) {
   if (!file) {
     throw new Error('invalid-file')
   }
-  return pool.connect((error, client, done) => {
-    if (error) {
-      if (process.env.DEBUG_ERRORS) {
-        console.log('postgres.storage', error)
-      }
-      return callback(error)
-    }
-    const objectid = path.substring(path.lastIndexOf('/') + 1)
-    return client.query('SELECT * FROM objects WHERE objectid=$1', [objectid], (error, result) => {
-      done()
-      return callback(error, result ? result.rows[0] : null)
-    })
-  })
+  const result = await pool.query('SELECT * FROM objects WHERE fullpath=$1', [file])
+  let data
+  if (result && result.rows && result.rows.length && result.rows[0].blob) {
+    data = result.rows[0].blob.toString('utf-8')
+  }
+  return data
 }
 
-function readMany(files, callback) {
+async function readMany(path, files) {
   if (!files || !files.length) {
     throw new Error('invalid-files')
   }
-  const objectids = []
-  for (const path of files) {
-    const objectid = path.substring(path.lastIndexOf('/') + 1)
-    objectids.push(objectid)
+  const fullPaths = []
+  for (const file of files) {
+    fullPaths.push(`${path}/${file}`)
   }
-  return client.query('SELECT * FROM objects WHERE objectid IN $1', [objectids], (error, result) => {
-    done()
-    if (error) {
-      if (process.env.DEBUG_ERRORS) {
-        console.log('postgres.storage', error)
-      }
-      return callback(error)
-    }
-    const data = {}
-    if (result && result.rows && result.rows.length) {
-      for (const i in result.rows) {
-        data[files[i]] = array[i]
+  const result = await pool.query('SELECT * FROM objects WHERE fullpath=ANY($1)', [fullPaths])
+  const data = {}
+  if (result && result.rows && result.rows.length) {
+    for (const row of result.rows) {
+      for (const file of files) {
+        if (row.fullpath === `${path}/${file}`) {
+          data[file] = row.blob.toString('utf-8')
+          break
+        }
       }
     }
-    return callback(null, data)
-  })
+  }
+  return data
 }
 
-function readImage(file, callback) {
+async function readImage(file) {
   if (!file) {
     throw new Error('invalid-file')
   }
   if (!file) {
     throw new Error('invalid-file')
   }
-  return pool.connect((error, client, done) => {
-    if (error) {
-      if (process.env.DEBUG_ERRORS) {
-        console.log('postgres.storage', error)
-      }
-      return callback(error)
-    }
-    const objectid = path.substring(path.lastIndexOf('/') + 1)
-    return client.query('SELECT * FROM objects WHERE objectid=$1', [objectid], (error, result) => {
-      done()
-      return callback(error, result ? result.rows[0] : null)
-    })
-  })
+  const result = await pool.query('SELECT * FROM objects WHERE fullpath=$1', [file])
+  return result ? result.rows[0] : null
 }
