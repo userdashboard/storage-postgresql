@@ -10,10 +10,10 @@
   },
   "license": "SPDX(MIT OR Unlicense)",
   "main": "index.js",
-  "name": "@userappstore/storage-postgresql",
+  "name": "@userdashboard/storage-postgresql",
   "repository": {
     "type": "git",
-    "url": "git://github.com/userappstore/storage-postgresql.git"
+    "url": "git://github.com/userdashboard/storage-postgresql.git"
   },
-  "version": "1.1.0"
+  "version": "1.0.0"
 }
