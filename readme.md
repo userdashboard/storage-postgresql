@@ -1,4 +1,4 @@
-# Redis Storage for Dashboard
+# PostgreSQL Storage for Dashboard
 
 Install this module to use [PostgreSQL](https://postgresql.org) for data storage.
 
