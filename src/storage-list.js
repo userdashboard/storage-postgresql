@@ -51,9 +51,6 @@ async function list(path, offset, pageSize) {
   if (offset < 0) {
     throw new Error('invalid-offset')
   }
-  if (offset && offset >= pageSize) {
-    throw new Error('invalid-offset')
-  }
   const result = await pool.query(`SELECT objectid FROM lists WHERE path=$1 ORDER BY created DESC LIMIT ${pageSize} OFFSET ${offset}`, [path])
   if (!result.rows || !result.rows.length) {
     return
