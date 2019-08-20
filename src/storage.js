@@ -69,7 +69,7 @@ async function read(file) {
   const result = await pool.query('SELECT * FROM objects WHERE fullpath=$1', [file])
   let data
   if (result && result.rows && result.rows.length && result.rows[0].blob) {
-    data = result.rows[0].blob.toString('utf-8')
+    data = result.rows[0].blob.toString()
   }
   return data
 }
@@ -88,7 +88,7 @@ async function readMany(path, files) {
     for (const row of result.rows) {
       for (const file of files) {
         if (row.fullpath === `${path}/${file}`) {
-          data[file] = row.blob.toString('utf-8')
+          data[file] = row.blob.toString()
           break
         }
       }
