@@ -17,9 +17,9 @@ Dashboard proxies your application server to create a single website where pages
 
 Using modules you can expand Dashboard to include organizations, subscriptions powered by Stripe, or a Stripe Connect platform.
 
-- [Developer documentation home](https://userdashboard.github.io/developers/)
-- [Administrator documentation home](https://userdashboard.github.io/administrators/)
-- [User documentation home](https://userdashboard.github.io/users/)
+- [Developer documentation home](https://userdashboard.github.io/home)
+- [Administrator documentation home](https://userdashboard.github.io/administrators/home)
+- [User documentation home](https://userdashboard.github.io/users/home)
 
 #### Development
 
