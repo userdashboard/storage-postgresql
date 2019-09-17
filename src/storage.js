@@ -14,7 +14,7 @@ module.exports = {
   deleteFile
 }
 
-async function exists(path) {
+async function exists (path) {
   if (!path) {
     throw new Error('invalid-file')
   }
@@ -25,7 +25,7 @@ async function exists(path) {
   return result && result.rows && result.rows.length ? result.rows[0].exists : null
 }
 
-async function deleteFile(path) {
+async function deleteFile (path) {
   if (!path) {
     throw new Error('invalid-file')
   }
@@ -36,7 +36,7 @@ async function deleteFile(path) {
   return result ? result.count === 1 : null
 }
 
-async function write(file, contents) {
+async function write (file, contents) {
   if (!file) {
     throw new Error('invalid-file')
   }
@@ -46,12 +46,12 @@ async function write(file, contents) {
   if (typeof (contents) !== 'number' && typeof (contents) !== 'string') {
     contents = JSON.stringify(contents)
   }
-  contents = Buffer.isBuffer(contents) ? contents : new Buffer(contents)
+  contents = Buffer.isBuffer(contents) ? contents : Buffer.from(contents)
   contents = `\\x${contents.toString('hex')}`
   await pool.query('INSERT INTO objects(fullpath, blob) VALUES($1, $2) ON CONFLICT(fullpath) DO UPDATE SET blob=$2', [file, contents])
 }
 
-async function writeImage(file, buffer) {
+async function writeImage (file, buffer) {
   if (!file) {
     throw new Error('invalid-file')
   }
@@ -62,7 +62,7 @@ async function writeImage(file, buffer) {
   return result ? result.count === 1 : null
 }
 
-async function read(file) {
+async function read (file) {
   if (!file) {
     throw new Error('invalid-file')
   }
@@ -74,7 +74,7 @@ async function read(file) {
   return data
 }
 
-async function readMany(path, files) {
+async function readMany (path, files) {
   if (!files || !files.length) {
     throw new Error('invalid-files')
   }
@@ -97,7 +97,7 @@ async function readMany(path, files) {
   return data
 }
 
-async function readImage(file) {
+async function readImage (file) {
   if (!file) {
     throw new Error('invalid-file')
   }
