@@ -6,6 +6,7 @@ module.exports = {
 const connectionString = process.env.DATABASE_URL || 'postgres://localhost:5432/postgres'
 const configParse = require('pg-connection-string').parse
 const connectionConfig = configParse(connectionString)
+const fs = require('fs')
 const pg = require('pg')
 const pool = new pg.Pool(connectionConfig)
 pool.query(fs.readFileSync('./setup.sql'))
