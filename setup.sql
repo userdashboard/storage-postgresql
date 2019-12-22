@@ -1,15 +1,15 @@
-CREATE TABLE lists (
+CREATE TABLE IF NOT EXISTS lists (
   listid BIGSERIAL PRIMARY KEY,
   path VARCHAR(1000),
   objectid VARCHAR(1000),
   created TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
-CREATE TABLE objects (
+CREATE TABLE IF NOT EXISTS objects (
   fullpath varchar(1000) PRIMARY KEY,
   blob BYTEA,
   created TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
-CREATE INDEX ON lists(path);
-CREATE INDEX ON lists(objectid);
+CREATE INDEX IF NOT EXISTS  ON lists(path);
+CREATE INDEX IF NOT EXISTS ON lists(objectid);
