@@ -28,7 +28,6 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - name: Setup Dashboard
       run: |
-        sudo apt-get install -y postgresql-server
         git clone https://github.com/userdashboard/dashboard.git dashboard
         cd dashboard
         npm install postgresql mocha puppeteer@2.1.1 --no-save
