@@ -30,7 +30,7 @@ jobs:
       run: |
         git clone https://github.com/userdashboard/dashboard.git dashboard
         cd dashboard
-        npm install postgresql mocha puppeteer@2.1.1 --no-save
+        npm install pg mocha puppeteer@2.1.1 --no-save
         mkdir -p node_modules/@userdashboard/storage-postgresql
         cp ../index.js node_modules/@userdashboard/storage-postgresql
         cp -R ../src node_modules/@userdashboard/storage-postgresql
