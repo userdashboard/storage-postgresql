@@ -10,7 +10,7 @@ const path = require('path')
 const pg = require('pg')
 let setupSQLFile = path.join(__dirname, 'setup.sql')
 if (!fs.existsSync(setupSQLFile)) {
-  setupSQLFile = path.join('.', 'node_modules/@userdashboard/storage-postgresql/setup.sql')
+  setupSQLFile = path.join(global.rootPath, 'node_modules/@userdashboard/storage-postgresql/setup.sql')
 }
 setupSQLFile = fs.readFileSync(setupSQLFile).toString()
 const pool = new pg.Pool(connectionConfig)
