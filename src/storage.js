@@ -14,6 +14,12 @@ module.exports = {
   deleteFile
 }
 
+if (process.env.NODE_ENV === 'testing') {
+  module.exports.flush = async () => {
+    return pool.query('DELETE FROM objects;  DELETE FROM lists')
+  }
+}
+
 async function exists (path) {
   if (!path) {
     throw new Error('invalid-file')
