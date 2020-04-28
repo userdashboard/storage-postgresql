@@ -33,6 +33,7 @@ jobs:
         npm install pg mocha puppeteer@2.1.1 --no-save
         mkdir -p node_modules/@userdashboard/storage-postgresql
         cp ../index.js node_modules/@userdashboard/storage-postgresql
+        cp ../setup.sql node_modules/@userdashboard/storage-postgresql
         cp -R ../src node_modules/@userdashboard/storage-postgresql
     - name: Test without encryption
       run: cd dashboard && npm test
