@@ -22,10 +22,10 @@ if (process.env.NODE_ENV === 'testing') {
     const path = require('path')
     let setupSQLFile = path.join(__dirname, 'setup.sql')
     if (!fs.existsSync(setupSQLFile)) {
-      setupSQLFile = path.join(__dirname, 'node_modules/@userdashboard/storage-postgresql/setup.sql')
+      setupSQLFile = path.join('.', 'node_modules/@userdashboard/storage-postgresql/setup.sql')
     }
     setupSQLFile = fs.readFileSync(setupSQLFile).toString()
-    pool.query(setupSQLFile)
+    await pool.query(setupSQLFile)
   }
 }
 
