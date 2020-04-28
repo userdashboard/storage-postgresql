@@ -27,8 +27,9 @@ if (process.env.NODE_ENV === 'testing') {
     if (!fs.existsSync(setupSQLFile)) {
       setupSQLFile = path.join(global.rootPath, 'node_modules/@userdashboard/storage-postgresql/setup.sql')
     }
-    setupSQLFile = fs.readFileSync(setupSQLFile).toString()
     console.log('flush4', setupSQLFile)
+    setupSQLFile = fs.readFileSync(setupSQLFile).toString()
+    console.log('flush5', setupSQLFile)
     await pool.query(setupSQLFile)
   }
 }
