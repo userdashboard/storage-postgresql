@@ -16,8 +16,11 @@ module.exports = {
 
 if (process.env.NODE_ENV === 'testing') {
   module.exports.flush = async () => {
+    console.log('flush1')
     await pool.query('DROP TABLE IF EXISTS objects')
+    console.log('flush2')
     await pool.query('DROP TABLE IF EXISTS lists')
+    console.log('flush3')
     const fs = require('fs')
     const path = require('path')
     let setupSQLFile = path.join(__dirname, 'setup.sql')
@@ -25,6 +28,7 @@ if (process.env.NODE_ENV === 'testing') {
       setupSQLFile = path.join(global.rootPath, 'node_modules/@userdashboard/storage-postgresql/setup.sql')
     }
     setupSQLFile = fs.readFileSync(setupSQLFile).toString()
+    console.log('flush4', setupSQLFile)
     await pool.query(setupSQLFile)
   }
 }
