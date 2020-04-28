@@ -1,0 +1,66 @@
+name: test-and-publish
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [12.x]
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    steps:
+    - uses: actions/checkout@v1
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: Setup Dashboard
+      run: |
+        sudo apt-get install -y postgresql-server
+        git clone https://github.com/userdashboard/dashboard.git dashboard
+        cd dashboard
+        npm install postgresql mocha puppeteer@2.1.1 --no-save
+        mkdir -p node_modules/@userdashboard/storage-postgresql
+        cp ../index.js node_modules/@userdashboard/storage-postgresql
+        cp -R ../src node_modules/@userdashboard/storage-postgresql
+    - name: Test without encryption
+      run: cd dashboard && npm test
+      env:
+        NODE_ENV: testing
+        FAST_START: true
+        DASHBOARD_SERVER: "http://localhost:9000"
+        DOMAIN: "localhost"
+        STORAGE_ENGINE: "@userdashboard/storage-postgresql"
+        DATABASE_URL: "postgres://postgres:postgres@localhost:5432/postgres"
+        GENERATE_SITEMAP_TXT: false
+        GENERATE_API_TXT: false
+    - name: Test with encryption
+      run: cd dashboard && npm test
+      env:
+        NODE_ENV: testing
+        FAST_START: true
+        DASHBOARD_SERVER: "http://localhost:9000"
+        DOMAIN: "localhost"
+        STORAGE_ENGINE: "@userdashboard/storage-postgresql"
+        DATABASE_URL: "postgres://postgres:postgres@localhost:5432/postgres"
+        GENERATE_SITEMAP_TXT: false
+        GENERATE_API_TXT: false
+        ENCRYPTION_SECRET: "12345678901234567890123456789012"
+        ENCRYPTION_SECRET_IV: "1234123412341234"
+    - name: Publish to NPM
+      uses: JS-DevTools/npm-publish@v1
+      with:
+        token: ${{ secrets.NPM_TOKEN }}
+        
