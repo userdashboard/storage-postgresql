@@ -11,5 +11,5 @@ CREATE TABLE IF NOT EXISTS objects (
   created TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
-CREATE INDEX IF NOT EXISTS ON lists(path);
-CREATE INDEX IF NOT EXISTS ON lists(objectid);
+CREATE INDEX IF NOT EXISTS index_lists_path ON lists(path);
+CREATE INDEX IF NOT EXISTS index_lists_objectid ON lists(objectid);
