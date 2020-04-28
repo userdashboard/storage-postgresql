@@ -16,7 +16,7 @@ module.exports = {
 
 if (process.env.NODE_ENV === 'testing') {
   module.exports.flush = async () => {
-    return pool.query('DELETE FROM objects;  DELETE FROM lists')
+    return pool.query('IF TABLE EXISTS objects DELETE FROM objects;  IF TABLE EXISTS lists DELETE FROM lists')
   }
 }
 
