@@ -8,6 +8,7 @@ fi
 rm -rf node_modules/@userdashboard/storage-postgresql
 mkdir -p node_modules/@userdashboard/storage-postgresql
 cp ../index.js node_modules/@userdashboard/storage-postgresql
+cp ../setup.sql node_modules/@userdashboard/storage-postgresql
 cp -R ../src node_modules/@userdashboard/storage-postgresql
 
 NODE_ENV=testing \
