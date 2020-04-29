@@ -29,25 +29,19 @@ if (process.env.NODE_ENV === 'testing') {
   }
 }
 
-async function exists (path) {
-  if (!path) {
+async function exists (file) {
+  if (!file) {
     throw new Error('invalid-file')
   }
-  if (path.indexOf('/') === path.length - 1) {
-    throw new Error('invalid-file')
-  }
-  const result = await pool.query('SELECT EXISTS(SELECT 1 FROM objects WHERE fullpath=$1)', [path])
+  const result = await pool.query('SELECT EXISTS(SELECT 1 FROM objects WHERE fullpath=$1)', [file])
   return result && result.rows && result.rows.length ? result.rows[0].exists : null
 }
 
-async function deleteFile (path) {
-  if (!path) {
+async function deleteFile (file) {
+  if (!file) {
     throw new Error('invalid-file')
   }
-  if (path.indexOf('/') === path.length - 1) {
-    throw new Error('invalid-file')
-  }
-  const result = await pool.query('DELETE FROM objects WHERE fullpath=$1', [path])
+  const result = await pool.query('DELETE FROM objects WHERE fullpath=$1', [file])
   return result ? result.count === 1 : null
 }
 

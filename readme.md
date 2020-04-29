@@ -19,7 +19,7 @@ Using modules you can expand Dashboard to include organizations, subscriptions p
 
 ## Support and documentation
 
-Join the freenode IRC #dashboard chatroom for support.  [Web IRC client](https://kiwiirc.com/nextclient/)
+Join the freenode IRC #userdashboard chatroom for support.  [Web IRC client](https://kiwiirc.com/nextclient/)
 
 - [Developer documentation home](https://userdashboard.github.io/home)
 - [Administrator documentation home](https://userdashboard.github.io/administrators/home)
