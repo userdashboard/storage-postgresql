@@ -1,4 +1,5 @@
 # PostgreSQL Storage for Dashboard
+![Test suite status](https://github.com/userdashboard/storage-postgresql/workflows/test-and-publish/badge.svg?branch=master)
 
 Install this module to use [PostgreSQL](https://postgresql.org) for data storage.
 
