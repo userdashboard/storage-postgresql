@@ -33,7 +33,7 @@ async function exists (file) {
   if (!file) {
     throw new Error('invalid-file')
   }
-  const result = await pool.query('SELECT EXISTS(SELECT 1 FROM objects WHERE fullpath=$1)', [file])
+  const result = await pool.query('SELECT EXISTS(SELECT 1 FROM objects WHERE path=$1)', [file])
   return result && result.rows && result.rows.length ? result.rows[0].exists : null
 }
 
@@ -41,7 +41,7 @@ async function deleteFile (file) {
   if (!file) {
     throw new Error('invalid-file')
   }
-  const result = await pool.query('DELETE FROM objects WHERE fullpath=$1', [file])
+  const result = await pool.query('DELETE FROM objects WHERE path=$1', [file])
   return result ? result.count === 1 : null
 }
 
@@ -57,7 +57,7 @@ async function write (file, contents) {
   }
   contents = Buffer.isBuffer(contents) ? contents : Buffer.from(contents)
   contents = `\\x${contents.toString('hex')}`
-  await pool.query('INSERT INTO objects(fullpath, blob) VALUES($1, $2) ON CONFLICT(fullpath) DO UPDATE SET blob=$2', [file, contents])
+  await pool.query('INSERT INTO objects(path, contents) VALUES($1, $2) ON CONFLICT(path) DO UPDATE SET contents=$2', [file, contents])
 }
 
 async function writeImage (file, buffer) {
@@ -67,7 +67,7 @@ async function writeImage (file, buffer) {
   if (!buffer || !buffer.length) {
     throw new Error('invalid-buffer')
   }
-  const result = await pool.query('INSERT INTO objects(fullpath, blob) VALUES($1, $2) ON CONFLICT(fullpath) DO UPDATE SET blob=$2', [file, buffer])
+  const result = await pool.query('INSERT INTO objects(path, contents) VALUES($1, $2) ON CONFLICT(path) DO UPDATE SET contents=$2', [file, buffer])
   return result ? result.count === 1 : null
 }
 
@@ -75,10 +75,10 @@ async function read (file) {
   if (!file) {
     throw new Error('invalid-file')
   }
-  const result = await pool.query('SELECT * FROM objects WHERE fullpath=$1', [file])
+  const result = await pool.query('SELECT * FROM objects WHERE path=$1', [file])
   let data
-  if (result && result.rows && result.rows.length && result.rows[0].blob) {
-    data = result.rows[0].blob.toString()
+  if (result && result.rows && result.rows.length && result.rows[0].contents) {
+    data = result.rows[0].contents.toString()
   }
   return data
 }
@@ -87,17 +87,17 @@ async function readMany (path, files) {
   if (!files || !files.length) {
     throw new Error('invalid-files')
   }
-  const fullPaths = []
+  const paths = []
   for (const file of files) {
-    fullPaths.push(`${path}/${file}`)
+    paths.push(`${path}/${file}`)
   }
-  const result = await pool.query('SELECT * FROM objects WHERE fullpath=ANY($1)', [fullPaths])
+  const result = await pool.query('SELECT * FROM objects WHERE path=ANY($1)', [paths])
   const data = {}
   if (result && result.rows && result.rows.length) {
     for (const row of result.rows) {
       for (const file of files) {
-        if (row.fullpath === `${path}/${file}`) {
-          data[file] = row.blob.toString()
+        if (row.path === `${path}/${file}`) {
+          data[file] = row.contents.toString()
           break
         }
       }
@@ -113,6 +113,6 @@ async function readImage (file) {
   if (!file) {
     throw new Error('invalid-file')
   }
-  const result = await pool.query('SELECT * FROM objects WHERE fullpath=$1', [file])
+  const result = await pool.query('SELECT * FROM objects WHERE path=$1', [file])
   return result ? result.rows[0] : null
 }

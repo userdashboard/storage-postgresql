@@ -6,8 +6,8 @@ CREATE TABLE IF NOT EXISTS lists (
 );
 
 CREATE TABLE IF NOT EXISTS objects (
-  fullpath varchar(1000) PRIMARY KEY,
-  blob BYTEA,
+  path VARCHAR(1000) PRIMARY KEY,
+  contents BYTEA,
   created TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
