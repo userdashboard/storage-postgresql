@@ -22,11 +22,10 @@ jobs:
           - 5432:5432
     steps:
     - uses: actions/checkout@v1
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
+    - uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - name: Setup dependencies
+    - name: Install dependencies
       run: |
         git clone https://github.com/userdashboard/dashboard.git /tmp/instance
         cd /tmp/instance
@@ -37,7 +36,7 @@ jobs:
         cp index.js /tmp/instance/node_modules/@userdashboard/storage-postgresql
         cp setup.sql /tmp/instance/node_modules/@userdashboard/storage-postgresql
         cp -R src /tmp/instance/node_modules/@userdashboard/storage-postgresql
-    - name: Test without encryption
+    - name: Test unencrypted PostgreSQL storage
       run: cd /tmp/instance && npm test
       env:
         NODE_ENV: "testing"
@@ -48,7 +47,7 @@ jobs:
         DATABASE_URL: "postgres://postgres:postgres@localhost:5432/postgres"
         GENERATE_SITEMAP_TXT: "false"
         GENERATE_API_TXT: "false"
-    - name: Test with encryption
+    - name: Test encrypted PostgreSQL storage
       run: cd /tmp/instance && npm test
       env:
         NODE_ENV: "testing"
