@@ -5,8 +5,13 @@ Install this module to use [PostgreSQL](https://postgresql.org) for data storage
 
 You will need to launch with additional configuration variables:
 
-  STORAGE_ENGINE=@userdashboard/storage-postgresql
+  STORAGE=@userdashboard/storage-postgresql
   DATABASE_URL=postgres://localhost:5432/database
+
+You can use this storage for a module:
+
+    MODULE_NAME_STORAGE=@userdashboard/storage-postgresql
+    MODULE_NAME_DATABASE_URL=postgres://localhost:5432/database
 
 To test this module use [Dashboard](https://github.com/userdashboard/dashboard)'s test suite configured with this storage engine.
 
