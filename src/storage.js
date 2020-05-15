@@ -1,11 +1,19 @@
-const pg = require('pg')
 const connectionString = require('pg-connection-string')
+const fs = require('fs')
+const path = require('path')
+const pg = require('pg')
 
 module.exports = {
   setup: async (moduleName) => {
     const databaseURL = process.env[`${moduleName}_DATABASE_URL`] || process.env.DATABASE_URL || 'postgres://localhost:5432/postgres'
     const connectionConfig = connectionString.parse(databaseURL)
     const pool = new pg.Pool(connectionConfig)
+    let setupSQLFile = path.join(__dirname, 'setup.sql')
+    if (!fs.existsSync(setupSQLFile)) {
+      setupSQLFile = path.join(global.applicationPath, 'node_modules/@userdashboard/storage-postgresql/setup.sql')
+    }
+    setupSQLFile = fs.readFileSync(setupSQLFile).toString()
+    pool.query(setupSQLFile)
     const configuration = {
       exists: async (file) => {
         if (!file) {
