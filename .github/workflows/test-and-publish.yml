@@ -29,7 +29,7 @@ jobs:
       run: |
         git clone https://github.com/userdashboard/dashboard.git /tmp/instance
         cd /tmp/instance
-        npm install pg mocha puppeteer@2.1.1 --no-save
+        npm install pg mocha faker puppeteer@2.1.1 --no-save
     - name: Fake-install module
       run: |
         mkdir -p /tmp/instance/node_modules/@userdashboard/storage-postgresql
