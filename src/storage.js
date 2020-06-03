@@ -98,10 +98,18 @@ module.exports = {
       }
     }
     if (process.env.NODE_ENV === 'testing') {
-      configuration.flush = async () => {
-        await pool.query('DELETE FROM objects')
-        await pool.query('DELETE FROM lists')
-      }
+      const util = require('util')
+      configuration.flush = util.promisify((callback) => {
+        async function doFlush () {
+          await pool.query('DELETE FROM objects')
+          await pool.query('DELETE FROM lists')
+          return callback()
+        }
+        if (!pool) {
+          return setTimeout(doFlush, 1)
+        }
+        return doFlush()
+      })
     }
     return configuration
   }
