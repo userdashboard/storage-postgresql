@@ -101,6 +101,9 @@ module.exports = {
       const util = require('util')
       configuration.flush = util.promisify((callback) => {
         async function doFlush () {
+          if (!pool) {
+            return setTimeout(doFlush, 1)
+          }
           await pool.query('DELETE FROM objects')
           await pool.query('DELETE FROM lists')
           return callback()
