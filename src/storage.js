@@ -13,7 +13,7 @@ module.exports = {
       setupSQLFile = path.join(global.applicationPath, 'node_modules/@userdashboard/storage-postgresql/setup.sql')
     }
     setupSQLFile = fs.readFileSync(setupSQLFile).toString()
-    pool.query(setupSQLFile)
+    await pool.query(setupSQLFile)
     const configuration = {
       exists: async (file) => {
         if (!file) {
@@ -98,27 +98,11 @@ module.exports = {
       }
     }
     if (process.env.NODE_ENV === 'testing') {
-      const util = require('util')
-      const fs = require('fs')
-      const path = require('path')
-      let setupSQLFile = path.join(__dirname, 'setup.sql')
-      if (!fs.existsSync(setupSQLFile)) {
-        setupSQLFile = path.join(global.applicationPath, 'node_modules/@userdashboard/storage-mysql/setup.sql')
+      configuration.flush = async () => {
+        const client = await pool.connect()
+        await client.query('DROP TABLE IF EXISTS objects; DROP TABLE IF EXISTS lists; ' + setupSQLFile)
+        await client.release(true)
       }
-      setupSQLFile = fs.readFileSync(setupSQLFile).toString()
-      configuration.flush = util.promisify((callback) => {
-        async function doFlush () {
-          if (!pool) {
-            return setTimeout(doFlush, 1)
-          }
-          await pool.query('DROP TABLE IF EXISTS objects; DROP TABLE IF EXISTS lists; ' + setupSQLFile)
-          return callback()
-        }
-        if (!pool) {
-          return setTimeout(doFlush, 1)
-        }
-        return doFlush()
-      })
     }
     return configuration
   }
