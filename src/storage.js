@@ -99,13 +99,19 @@ module.exports = {
     }
     if (process.env.NODE_ENV === 'testing') {
       const util = require('util')
+      const fs = require('fs')
+      const path = require('path')
+      let setupSQLFile = path.join(__dirname, 'setup.sql')
+      if (!fs.existsSync(setupSQLFile)) {
+        setupSQLFile = path.join(global.applicationPath, 'node_modules/@userdashboard/storage-mysql/setup.sql')
+      }
+      setupSQLFile = fs.readFileSync(setupSQLFile).toString()
       configuration.flush = util.promisify((callback) => {
         async function doFlush () {
           if (!pool) {
             return setTimeout(doFlush, 1)
           }
-          await pool.query('DELETE FROM objects')
-          await pool.query('DELETE FROM lists')
+          await pool.query('DROP TABLE IF EXISTS objects; DROP TABLE IF EXISTS lists; ' + setupSQLFile)
           return callback()
         }
         if (!pool) {
