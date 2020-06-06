@@ -2,9 +2,10 @@ const connectionString = require('pg-connection-string')
 const fs = require('fs')
 const path = require('path')
 const pg = require('pg')
+const util = require('util')
 
 module.exports = {
-  setup: async (moduleName) => {
+  setup: util.promisify((moduleName, callback) => {
     const databaseURL = process.env[`${moduleName}_DATABASE_URL`] || process.env.DATABASE_URL || 'postgres://localhost:5432/postgres'
     const connectionConfig = connectionString.parse(databaseURL)
     const pool = new pg.Pool(connectionConfig)
@@ -13,97 +14,156 @@ module.exports = {
       setupSQLFile = path.join(global.applicationPath, 'node_modules/@userdashboard/storage-postgresql/setup.sql')
     }
     setupSQLFile = fs.readFileSync(setupSQLFile).toString()
-    await pool.query(setupSQLFile)
-    const configuration = {
-      exists: async (file) => {
-        if (!file) {
-          throw new Error('invalid-file')
+    return pool.connect((error, client) => {
+      if (error) {
+        return callback(error)
+      }
+      return client.query(setupSQLFile, (error, response) => {
+        if (error) {
+          return callback(error)
         }
-        const result = await pool.query('SELECT EXISTS(SELECT 1 FROM objects WHERE path=$1)', [file])
-        return result && result.rows && result.rows.length ? result.rows[0].exists : null
-      },
-      read: async (file) => {
-        if (!file) {
-          throw new Error('invalid-file')
-        }
-        const result = await pool.query('SELECT * FROM objects WHERE path=$1', [file])
-        let data
-        if (result && result.rows && result.rows.length && result.rows[0].contents) {
-          data = result.rows[0].contents.toString()
-        }
-        return data
-      },
-      readMany: async (path, files) => {
-        if (!files || !files.length) {
-          throw new Error('invalid-files')
-        }
-        const paths = []
-        for (const file of files) {
-          paths.push(`${path}/${file}`)
-        }
-        const result = await pool.query('SELECT * FROM objects WHERE path=ANY($1)', [paths])
-        const data = {}
-        if (result && result.rows && result.rows.length) {
-          for (const row of result.rows) {
-            for (const file of files) {
-              if (row.path === `${path}/${file}`) {
-                data[file] = row.contents.toString()
-                break
-              }
+        client.release(true)
+        const configuration = {
+          exists: util.promisify((file, callback) => {
+            if (!file) {
+              return callback(new Error('invalid-file'))
             }
-          }
+            return pool.query('SELECT EXISTS(SELECT 1 FROM objects WHERE path=$1)', [file], (error, result) => {
+              if (error) {
+                return callback(error)
+              }
+              if (result && result.rows && result.rows.length) {
+                return callback(null, result.rows[0].exists)
+              }
+              return callback()
+            })
+          }),
+          read: util.promisify((file, callback) => {
+            if (!file) {
+              return callback(new Error('invalid-file'))
+            }
+            return pool.query('SELECT * FROM objects WHERE path=$1', [file], (error, result) => {
+              if (error) {
+                return callback(error)
+              }
+              if (result && result.rows && result.rows.length && result.rows[0].contents) {
+                const data = result.rows[0].contents.toString()
+                callback(null, data)
+              }
+              return callback()
+            })
+          }),
+          readMany: util.promisify((path, files, callback) => {
+            if (!files || !files.length) {
+              return callback(new Error('invalid-files'))
+            }
+            const paths = []
+            for (const file of files) {
+              paths.push(`${path}/${file}`)
+            }
+            return pool.query('SELECT * FROM objects WHERE path=ANY($1)', [paths], (error, result) => {
+              if (error) {
+                return callback(error)
+              }
+              if (result && result.rows && result.rows.length) {
+                const data = {}
+
+                for (const row of result.rows) {
+                  for (const file of files) {
+                    if (row.path === `${path}/${file}`) {
+                      data[file] = row.contents.toString()
+                      break
+                    }
+                  }
+                }
+                return callback(null, data)
+              }
+              return callback()
+            })
+          }),
+          readBinary: util.promisify((file, callback) => {
+            if (!file) {
+              return callback(new Error('invalid-file'))
+            }
+            if (!file) {
+              return callback(new Error('invalid-file'))
+            }
+            return pool.query('SELECT * FROM objects WHERE path=$1', [file], (error, result) => {
+              if (error) {
+                return callback(error)
+              }
+              if (result && result.rows.length) {
+                return callback(null, result.rows[0])
+              }
+              return callback()
+            })
+          }),
+          write: util.promisify((file, contents, callback) => {
+            if (!file) {
+              return callback(new Error('invalid-file'))
+            }
+            if (!contents && contents !== '') {
+              return callback(new Error('invalid-contents'))
+            }
+            if (typeof (contents) !== 'number' && typeof (contents) !== 'string') {
+              contents = JSON.stringify(contents)
+            }
+            contents = Buffer.isBuffer(contents) ? contents : Buffer.from(contents)
+            contents = `\\x${contents.toString('hex')}`
+            return pool.query('INSERT INTO objects(path, contents) VALUES($1, $2) ON CONFLICT(path) DO UPDATE SET contents=$2', [file, contents], (error) => {
+              if (error) {
+                return callback(error)
+              }
+              return callback()
+            })
+          }),
+          writeBinary: util.promisify((file, buffer, callback) => {
+            if (!file) {
+              return callback(new Error('invalid-file'))
+            }
+            if (!buffer || !buffer.length) {
+              return callback(new Error('invalid-buffer'))
+            }
+            return pool.query('INSERT INTO objects(path, contents) VALUES($1, $2) ON CONFLICT(path) DO UPDATE SET contents=$2', [file, buffer], (error, result) => {
+              if (error) {
+                return callback(error)
+              }
+              return callback(null, result.count === 1)
+            })
+          }),
+          delete: util.promisify((file, callback) => {
+            if (!file) {
+              return callback(new Error('invalid-file'))
+            }
+            return pool.query('DELETE FROM objects WHERE path=$1', [file], (error, result) => {
+              if (error) {
+                return callback(error)
+              }
+              return callback(null, result.count === 1)
+            })
+          })
         }
-        return data
-      },
-      readBinary: async (file) => {
-        if (!file) {
-          throw new Error('invalid-file')
+        if (process.env.NODE_ENV === 'testing') {
+          configuration.flush = util.promisify((callback) => {
+            if (!pool) {
+              return callback()
+            }
+            return pool.connect((error, client) => {
+              if (error) {
+                return callback(error)
+              }
+              return client.query('DROP TABLE IF EXISTS objects; DROP TABLE IF EXISTS lists; ' + setupSQLFile, (error) => {
+                if (error) {
+                  return callback(error)
+                }
+                client.release(true)
+                return callback()
+              })
+            })
+          })
         }
-        if (!file) {
-          throw new Error('invalid-file')
-        }
-        const result = await pool.query('SELECT * FROM objects WHERE path=$1', [file])
-        return result ? result.rows[0] : null
-      },
-      write: async (file, contents) => {
-        if (!file) {
-          throw new Error('invalid-file')
-        }
-        if (!contents && contents !== '') {
-          throw new Error('invalid-contents')
-        }
-        if (typeof (contents) !== 'number' && typeof (contents) !== 'string') {
-          contents = JSON.stringify(contents)
-        }
-        contents = Buffer.isBuffer(contents) ? contents : Buffer.from(contents)
-        contents = `\\x${contents.toString('hex')}`
-        await pool.query('INSERT INTO objects(path, contents) VALUES($1, $2) ON CONFLICT(path) DO UPDATE SET contents=$2', [file, contents])
-      },
-      writeBinary: async (file, buffer) => {
-        if (!file) {
-          throw new Error('invalid-file')
-        }
-        if (!buffer || !buffer.length) {
-          throw new Error('invalid-buffer')
-        }
-        const result = await pool.query('INSERT INTO objects(path, contents) VALUES($1, $2) ON CONFLICT(path) DO UPDATE SET contents=$2', [file, buffer])
-        return result ? result.count === 1 : null
-      },
-      delete: async (file) => {
-        if (!file) {
-          throw new Error('invalid-file')
-        }
-        const result = await pool.query('DELETE FROM objects WHERE path=$1', [file])
-        return result ? result.count === 1 : null
-      }
-    }
-    if (process.env.NODE_ENV === 'testing') {
-      configuration.flush = async () => {
-        const client = await pool.connect()
-        await client.query('DROP TABLE IF EXISTS objects; DROP TABLE IF EXISTS lists; ' + setupSQLFile)
-        await client.release(true)
-      }
-    }
-    return configuration
-  }
+        return callback(null, configuration)
+      })
+    })
+  })
 }
