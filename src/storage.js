@@ -13,7 +13,14 @@ module.exports = {
     const databaseURL = process.env[`${moduleName}_DATABASE_URL`] || process.env.DATABASE_URL || 'postgres://localhost:5432/postgres'
     const connectionConfig = connectionString.parse(databaseURL)
     const pool = new pg.Pool(connectionConfig)
-    const Log = require('@userdashboard/dashboard/src/log.js')('postgresql')
+    const dashboardPath1 = path.join(global.applicationPath, 'node_modules/@userdashboard/dashboard/src/log.js')
+    let Log
+    if (fs.existsSync(dashboardPath1)) {
+      Log = require(dashboardPath1)('postgresql')
+    } else {
+      const dashboardPath2 = path.join(global.applicationPath, 'src/log.js')
+      Log = require(dashboardPath2)('postgresql')
+    }
     let setupSQLFile = path.join(__dirname, 'setup.sql')
     if (!fs.existsSync(setupSQLFile)) {
       setupSQLFile = path.join(global.applicationPath, 'node_modules/@userdashboard/storage-postgresql/setup.sql')
