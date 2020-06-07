@@ -9,6 +9,7 @@ module.exports = {
     const databaseURL = process.env[`${moduleName}_DATABASE_URL`] || process.env.DATABASE_URL || 'postgres://localhost:5432/postgres'
     const connectionConfig = connectionString.parse(databaseURL)
     const pool = new pg.Pool(connectionConfig)
+    const Log = require('@userdashboard/dashboard/src/log.js')('postgresql')
     let setupSQLFile = path.join(__dirname, 'setup.sql')
     if (!fs.existsSync(setupSQLFile)) {
       setupSQLFile = path.join(global.applicationPath, 'node_modules/@userdashboard/storage-postgresql/setup.sql')
@@ -16,11 +17,13 @@ module.exports = {
     setupSQLFile = fs.readFileSync(setupSQLFile).toString()
     return pool.connect((error, client) => {
       if (error) {
-        return callback(error)
+        Log.error('error connecting', error)
+        return callback(new Error('unknown-error'))
       }
       return client.query(setupSQLFile, (error, response) => {
         if (error) {
-          return callback(error)
+          Log.error('error setting up', error)
+          return callback(new Error('unknown-error'))
         }
         client.release(true)
         const configuration = {
@@ -30,7 +33,8 @@ module.exports = {
             }
             return pool.query('SELECT EXISTS(SELECT 1 FROM objects WHERE path=$1)', [file], (error, result) => {
               if (error) {
-                return callback(error)
+                Log.error('error checking exist', error)
+                return callback(new Error('unknown-error'))
               }
               if (result && result.rows && result.rows.length) {
                 return callback(null, result.rows[0].exists)
@@ -44,7 +48,8 @@ module.exports = {
             }
             return pool.query('SELECT * FROM objects WHERE path=$1', [file], (error, result) => {
               if (error) {
-                return callback(error)
+                Log.error('error reading', error)
+                return callback(new Error('unknown-error'))
               }
               if (result && result.rows && result.rows.length && result.rows[0].contents) {
                 const data = result.rows[0].contents.toString()
@@ -63,11 +68,11 @@ module.exports = {
             }
             return pool.query('SELECT * FROM objects WHERE path=ANY($1)', [paths], (error, result) => {
               if (error) {
-                return callback(error)
+                Log.error('error reading many', error)
+                return callback(new Error('unknown-error'))
               }
               if (result && result.rows && result.rows.length) {
                 const data = {}
-
                 for (const row of result.rows) {
                   for (const file of files) {
                     if (row.path === `${path}/${file}`) {
@@ -90,7 +95,8 @@ module.exports = {
             }
             return pool.query('SELECT * FROM objects WHERE path=$1', [file], (error, result) => {
               if (error) {
-                return callback(error)
+                Log.error('error reading binary', error)
+                return callback(new Error('unknown-error'))
               }
               if (result && result.rows.length) {
                 return callback(null, result.rows[0])
@@ -112,7 +118,8 @@ module.exports = {
             contents = `\\x${contents.toString('hex')}`
             return pool.query('INSERT INTO objects(path, contents) VALUES($1, $2) ON CONFLICT(path) DO UPDATE SET contents=$2', [file, contents], (error) => {
               if (error) {
-                return callback(error)
+                Log.error('error inserting', error)
+                return callback(new Error('unknown-error'))
               }
               return callback()
             })
@@ -126,7 +133,8 @@ module.exports = {
             }
             return pool.query('INSERT INTO objects(path, contents) VALUES($1, $2) ON CONFLICT(path) DO UPDATE SET contents=$2', [file, buffer], (error, result) => {
               if (error) {
-                return callback(error)
+                Log.error('error inserting binary', error)
+                return callback(new Error('unknown-error'))
               }
               return callback(null, result.count === 1)
             })
@@ -137,7 +145,8 @@ module.exports = {
             }
             return pool.query('DELETE FROM objects WHERE path=$1', [file], (error, result) => {
               if (error) {
-                return callback(error)
+                Log.error('error deleting', error)
+                return callback(new Error('unknown-error'))
               }
               return callback(null, result.count === 1)
             })
@@ -150,11 +159,13 @@ module.exports = {
             }
             return pool.connect((error, client) => {
               if (error) {
-                return callback(error)
+                Log.error('error connecting', error)
+                return callback(new Error('unknown-error'))
               }
               return client.query('DROP TABLE IF EXISTS objects; DROP TABLE IF EXISTS lists; ' + setupSQLFile, (error) => {
                 if (error) {
-                  return callback(error)
+                  Log.error('error flushing', error)
+                  return callback(new Error('unknown-error'))
                 }
                 client.release(true)
                 return callback()
