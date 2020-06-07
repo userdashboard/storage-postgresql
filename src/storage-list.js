@@ -31,11 +31,15 @@ module.exports = {
         const commands = []
         const values = []
         for (const path in items) {
-          const n = commands.length + 1
-          commands.push('INSERT INTO lists(path, objectid) VALUES ($' + n + ', $' + n + 1 + ')')
+          const n = values.length + 1
+          if (!commands.length) {
+            commands.push(`INSERT INTO lists(path, objectid) VALUES ($${n}, $${n + 1})`)
+          } else {
+            commands.push(`, ($${n}, $${n + 1})`)
+          }
           values.push(path, items[path])
         }
-        return pool.query(commands.join('; '), values, (error) => {
+        return pool.query(commands.join(''), values, (error) => {
           if (error) {
             Log.error('error adding many', error)
             return callback(new Error('unknown-error'))
