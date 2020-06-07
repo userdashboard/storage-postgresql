@@ -94,9 +94,6 @@ module.exports = {
             if (!file) {
               return callback(new Error('invalid-file'))
             }
-            if (!file) {
-              return callback(new Error('invalid-file'))
-            }
             return pool.query('SELECT * FROM objects WHERE path=$1', [file], (error, result) => {
               if (error) {
                 Log.error('error reading binary', error)
@@ -167,11 +164,11 @@ module.exports = {
                 return callback(new Error('unknown-error'))
               }
               return client.query('DROP TABLE IF EXISTS objects; DROP TABLE IF EXISTS lists; ' + setupSQLFile, (error) => {
+                client.release(true)
                 if (error) {
                   Log.error('error flushing', error)
                   return callback(new Error('unknown-error'))
                 }
-                client.release(true)
                 return callback()
               })
             })
