@@ -6,6 +6,10 @@ const util = require('util')
 
 module.exports = {
   setup: util.promisify((moduleName, callback) => {
+    if (!callback) {
+      callback = moduleName
+      moduleName = null
+    }
     const databaseURL = process.env[`${moduleName}_DATABASE_URL`] || process.env.DATABASE_URL || 'postgres://localhost:5432/postgres'
     const connectionConfig = connectionString.parse(databaseURL)
     const pool = new pg.Pool(connectionConfig)
