@@ -31,11 +31,7 @@ module.exports = {
         Log.error('error connecting', error)
         return callback(new Error('unknown-error'))
       }
-      return client.query(setupSQLFile, (error, response) => {
-        if (error) {
-          Log.error('error setting up', error)
-          return callback(new Error('unknown-error'))
-        }
+      return client.query(setupSQLFile, () => {
         client.release(true)
         const configuration = {
           exists: util.promisify((file, callback) => {
