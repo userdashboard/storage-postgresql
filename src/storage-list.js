@@ -35,11 +35,11 @@ module.exports = {
           if (!commands.length) {
             commands.push(`INSERT INTO lists(path, objectid) VALUES ($${n}, $${n + 1})`)
           } else {
-            commands.push(`, ($${n}, $${n + 1})`)
+            commands.push(`($${n}, $${n + 1})`)
           }
           values.push(path, items[path])
         }
-        return pool.query(commands.join(''), values, (error) => {
+        return pool.query(commands.join(', '), values, (error) => {
           if (error) {
             Log.error('error adding many', error)
             return callback(new Error('unknown-error'))
@@ -79,7 +79,7 @@ module.exports = {
         if (offset < 0) {
           throw new Error('invalid-offset')
         }
-        return pool.query(`SELECT objectid FROM lists WHERE path=$1 ORDER BY created DESC LIMIT ${pageSize} OFFSET ${offset}`, [path], (error, result) => {
+        return pool.query(`SELECT objectid FROM lists WHERE path=$1 ORDER BY listid DESC LIMIT ${pageSize} OFFSET ${offset}`, [path], (error, result) => {
           if (error) {
             Log.error('error listing', error)
             return callback(new Error('unknown-error'))
@@ -95,7 +95,7 @@ module.exports = {
         })
       }),
       listAll: util.promisify((path, callback) => {
-        return pool.query('SELECT objectid FROM lists WHERE path=$1 ORDER BY created DESC', [path], (error, result) => {
+        return pool.query('SELECT objectid FROM lists WHERE path=$1 ORDER BY listid DESC', [path], (error, result) => {
           if (error) {
             Log.error('error listing all', error)
             return callback(new Error('unknown-error'))
@@ -112,7 +112,7 @@ module.exports = {
       }),
       remove: util.promisify((path, objectid, callback) => {
         objectid = objectid.toString()
-        return pool.query('DELETE FROM lists WHERE objectid=$1', [objectid], (error) => {
+        return pool.query('DELETE FROM lists WHERE path=$1 AND objectid=$2', [path, objectid], (error) => {
           if (error) {
             Log.error('error removing', error)
             return callback(new Error('unknown-error'))
