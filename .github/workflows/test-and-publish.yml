@@ -48,6 +48,7 @@ jobs:
         mkdir -p node_modules/@userdashboard/storage-postgresql
         rm -rf node_modules/@userdashboard/storage-postgresql/src
         cp *.js node_modules/@userdashboard/storage-postgresql
+        cp *.sql node_modules/@userdashboard/storage-mysql
         cp -R src/ node_modules/@userdashboard/storage-postgresql/src/
         PACKAGE=`cat package.json`
         PACKAGE=${PACKAGE/\"description\"\: \"\"/\"dashboard\": \{ \"modules\"\: \[\"@userdashboard/organizations\"\] \}}
@@ -65,7 +66,6 @@ jobs:
         DATABASE_URL: "postgres://postgres:postgres@localhost:5432/postgres"
         GENERATE_SITEMAP_TXT: false
         GENERATE_API_TXT: false
-        LOG_LEVEL: "info,debug,error,log"
     - name: Test as primary storage
       run: mocha --file test-helper.js --bail --exit --full-trace --recursive --timeout 90000000 "./node_modules/@userdashboard/**/{,!(public)}/*.test.js"
       env:
