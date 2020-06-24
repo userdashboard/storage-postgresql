@@ -72,7 +72,7 @@ jobs:
         STORAGE: "@userdashboard/storage-postgresql"
         DATABASE_URL: "postgres://postgres:postgres@localhost:5432/postgres"
         ORGANIZATIONS_STORAGE: "@userdashboard/storage-redis"
-        ORGANIZATIONS_REDIS_URL: "mongodb://localhost:6379"
+        ORGANIZATIONS_REDIS_URL: "redis://localhost:6379"
         GENERATE_SITEMAP_TXT: false
         GENERATE_API_TXT: false
     - name: Test as module storage
@@ -83,7 +83,7 @@ jobs:
         DASHBOARD_SERVER: "http://localhost:9000"
         DOMAIN: "localhost"
         STORAGE: "@userdashboard/storage-redis"
-        REDIS_URL: "mongodb://localhost:6379"
+        REDIS_URL: "redis://localhost:6379"
         ORGANIZATIONS_STORAGE: "@userdashboard/storage-postgresql"
         ORGANIZATIONS_DATABASE_URL: "postgres://postgres:postgres@localhost:5432/postgres"
         GENERATE_SITEMAP_TXT: false
