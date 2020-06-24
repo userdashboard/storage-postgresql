@@ -27,6 +27,7 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - name: Install dependencies
       run: |
+        npm install
         npm install faker puppeteer@2.1.1 @userdashboard/dashboard --no-save
         git config --global user.name "${{ secrets.NAME }}"
         git config --global user.email "${{ secrets.EMAIL }}"
