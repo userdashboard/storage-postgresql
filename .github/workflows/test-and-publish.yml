@@ -47,7 +47,7 @@ jobs:
         npm install -g mocha standard
         mkdir -p node_modules/@userdashboard/storage-postgresql
         cp *.js node_modules/@userdashboard/storage-postgresql
-        cp *.sql node_modules/@userdashboard/storage-mysql
+        cp *.sql node_modules/@userdashboard/storage-postgresql
         cp -R src/ node_modules/@userdashboard/storage-postgresql/src/
         cp package.json package.json.old
         PACKAGE=`cat package.json`
