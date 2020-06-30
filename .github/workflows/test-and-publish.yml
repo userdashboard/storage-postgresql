@@ -56,7 +56,12 @@ jobs:
     - name: Lint (standard.js)
       run: standard src
     - name: Test as shared storage
-      run: mocha --file test-helper.js --bail --exit --full-trace --recursive --timeout 90000000 "./node_modules/@userdashboard/**/{,!(public)}/*.test.js" | tee tests.txt ; test ${PIPESTATUS[0]} -eq 0
+      run: |
+        mocha --file test-helper.js --bail --exit --full-trace --recursive --timeout 90000000 "./node_modules/@userdashboard/**/{,!(public)}/*.test.js" | tee tests.txt
+        TESTS=`cat tests.txt`
+        if [[ "$TESTS" == *" 1)"* ]]; then
+          exit 1
+        fi
       env:
         NODE_ENV: testing
         FAST_START: true
@@ -67,7 +72,12 @@ jobs:
         GENERATE_SITEMAP_TXT: false
         GENERATE_API_TXT: false
     - name: Test as only storage
-      run: mocha --file test-helper.js --bail --exit --full-trace --recursive --timeout 90000000 "./node_modules/@userdashboard/**/{,!(public)}/*.test.js"
+      run: |
+        mocha --file test-helper.js --bail --exit --full-trace --recursive --timeout 90000000 "./node_modules/@userdashboard/**/{,!(public)}/*.test.js" | tee tests.txt
+        TESTS=`cat tests.txt`
+        if [[ "$TESTS" == *" 1)"* ]]; then
+          exit 1
+        fi
       env:
         NODE_ENV: testing
         FAST_START: true
@@ -80,7 +90,12 @@ jobs:
         GENERATE_SITEMAP_TXT: false
         GENERATE_API_TXT: false
     - name: Test as module storage
-      run: mocha --file test-helper.js --bail --exit --full-trace --recursive --timeout 90000000 "./node_modules/@userdashboard/**/{,!(public)}/*.test.js"
+      run: |
+        mocha --file test-helper.js --bail --exit --full-trace --recursive --timeout 90000000 "./node_modules/@userdashboard/**/{,!(public)}/*.test.js" | tee tests.txt
+        TESTS=`cat tests.txt`
+        if [[ "$TESTS" == *" 1)"* ]]; then
+          exit 1
+        fi
       env:
         NODE_ENV: testing
         FAST_START: true
@@ -93,7 +108,12 @@ jobs:
         GENERATE_SITEMAP_TXT: false
         GENERATE_API_TXT: false
     - name: Test as primary and separately as module storage
-      run: mocha --file test-helper.js --bail --exit --full-trace --recursive --timeout 90000000 "./node_modules/@userdashboard/**/{,!(public)}/*.test.js"
+      run: |
+        mocha --file test-helper.js --bail --exit --full-trace --recursive --timeout 90000000 "./node_modules/@userdashboard/**/{,!(public)}/*.test.js" | tee tests.txt
+        TESTS=`cat tests.txt`
+        if [[ "$TESTS" == *" 1)"* ]]; then
+          exit 1
+        fi
       env:
         NODE_ENV: testing
         FAST_START: true
