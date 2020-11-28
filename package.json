@@ -5,8 +5,8 @@
   "deprecated": false,
   "description": "Use PostgreSQL as storage for Dashboard",
   "engine": {
-    "node": "12.18.4",
-    "npm": "6.14.6"
+    "node": "14.15.1",
+    "npm": "6.14.8"
   },
   "license": "MIT",
   "main": "index.js",
