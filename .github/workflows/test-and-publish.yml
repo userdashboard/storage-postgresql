@@ -27,7 +27,6 @@ jobs:
         ports:
           - 5431:5432
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
-
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-node@v1
@@ -61,7 +60,7 @@ jobs:
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         npm version patch
-    - name: Install dependencies
+    - name: Set up project
       run: |
         HERE=`pwd`
         mkdir /tmp/project
@@ -80,7 +79,7 @@ jobs:
           npm install standard -g
         fi        
         standard
-    - name: Test as common storage for Dashboard and module
+    - name: Test as only storage for Dashboard and modules
       run: |
         ./node_modules/.bin/mocha --file main.js --bail --exit --full-trace --recursive --timeout 90000000 "./node_modules/@userdashboard/**/{,!(public)}/*.test.js" | tee tests.txt
         TESTS=`cat tests.txt`
@@ -92,7 +91,7 @@ jobs:
         NODE_ENV: testing
         STORAGE: "@userdashboard/storage-postgresql"
         DATABASE_URL: "postgres://postgres:postgres@localhost:5432/storage1"
-    - name: Test as Dashboard storage with module using different storage
+    - name: Test as Dashboard storage with module on other type
       run: |
         ./node_modules/.bin/mocha --file main.js --bail --exit --full-trace --recursive --timeout 90000000 "./node_modules/@userdashboard/**/{,!(public)}/*.test.js" | tee tests.txt
         TESTS=`cat tests.txt`
@@ -106,7 +105,7 @@ jobs:
         DATABASE_URL: "postgres://postgres:postgres@localhost:5432/storage1"
         ORGANIZATIONS_STORAGE: "@userdashboard/storage-redis"
         ORGANIZATIONS_REDIS_URL: "redis://localhost:6379"
-    - name: Test as module storage with Dashboard using different storage
+    - name: Test as module storage with Dashboard on other type
       run: |
         ./node_modules/.bin/mocha --file main.js --bail --exit --full-trace --recursive --timeout 90000000 "./node_modules/@userdashboard/**/{,!(public)}/*.test.js" | tee tests.txt
         TESTS=`cat tests.txt`
@@ -120,7 +119,7 @@ jobs:
         REDIS_URL: "redis://localhost:6379"
         ORGANIZATIONS_STORAGE: "@userdashboard/storage-postgresql"
         ORGANIZATIONS_DATABASE_URL: "postgres://postgres:postgres@localhost:5432/storage1"
-    - name: Test as Dashboard and module using same storage different servers
+    - name: Test as Dashboard and module storage using separate servers
       run: |
         ./node_modules/.bin/mocha --file main.js --bail --exit --full-trace --recursive --timeout 90000000 "./node_modules/@userdashboard/**/{,!(public)}/*.test.js" | tee tests.txt
         TESTS=`cat tests.txt`
