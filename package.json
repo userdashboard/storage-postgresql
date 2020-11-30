@@ -4,9 +4,9 @@
   },
   "deprecated": false,
   "description": "Use PostgreSQL as storage for Dashboard",
-  "engine": {
-    "node": "14.15.1",
-    "npm": "6.14.8"
+  "engines": {
+    "node" : ">=12.0",
+    "npm" : ">=6.0"
   },
   "license": "MIT",
   "main": "index.js",
@@ -15,5 +15,17 @@
     "type": "git",
     "url": "git://github.com/userdashboard/storage-postgresql.git"
   },
-  "version": "1.0.34"
+  "scripts": {
+    "test": "act -j test"
+  },
+  "version": "1.0.34",
+  "peerDependencies": {
+    "@userdashboard/dashboard": "1.x"
+  },
+  "optionalDependencies": {
+    "@userdashboard/dashboard": "1.x"
+  },
+  "devDependencies": {
+    "@userdashboard/dashboard": "1.x"
+  }
 }
