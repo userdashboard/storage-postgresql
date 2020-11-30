@@ -69,7 +69,7 @@ jobs:
       working-directory: /tmp/project
       env:
         NODE_ENV: testing
-        STORAGE: @userdashboard/storage-postgresql
+        STORAGE: "@userdashboard/storage-postgresql"
         DATABASE_URL: "postgres://postgres:postgres@localhost:5432/storage1"
         NODE_OPTIONS: --preserve-symlinks
     - name: Test as Dashboard storage with module on other type
@@ -82,9 +82,9 @@ jobs:
       working-directory: /tmp/project
       env:
         NODE_ENV: testing
-        STORAGE: @userdashboard/storage-postgresql
+        STORAGE: "@userdashboard/storage-postgresql"
         DATABASE_URL: "postgres://postgres:postgres@localhost:5432/storage1"
-        ORGANIZATIONS_STORAGE: @userdashboard/storage-redis
+        ORGANIZATIONS_STORAGE: "@userdashboard/storage-redis"
         ORGANIZATIONS_REDIS_URL: redis://localhost:6379
         NODE_OPTIONS: --preserve-symlinks
     - name: Test as module storage with Dashboard on other type
@@ -97,9 +97,9 @@ jobs:
       working-directory: /tmp/project
       env:
         NODE_ENV: testing
-        STORAGE: @userdashboard/storage-redis
+        STORAGE: "@userdashboard/storage-redis"
         REDIS_URL: redis://localhost:6379
-        ORGANIZATIONS_STORAGE: @userdashboard/storage-postgresql
+        ORGANIZATIONS_STORAGE: "@userdashboard/storage-postgresql"
         ORGANIZATIONS_DATABASE_URL: "postgres://postgres:postgres@localhost:5432/storage1"
         NODE_OPTIONS: --preserve-symlinks
     - name: Test as Dashboard and module storage using separate servers
@@ -112,9 +112,9 @@ jobs:
       working-directory: /tmp/project
       env:
         NODE_ENV: testing
-        STORAGE: @userdashboard/storage-postgresql
+        STORAGE: "@userdashboard/storage-postgresql"
         DATABASE_URL: "postgres://postgres:postgres@localhost:5432/storage1"
-        ORGANIZATIONS_STORAGE: @userdashboard/storage-postgresql
+        ORGANIZATIONS_STORAGE: "@userdashboard/storage-postgresql"
         ORGANIZATIONS_DATABASE_URL: "postgres://postgres:postgres@localhost:5431/storage2"
         NODE_OPTIONS: --preserve-symlinks
     - name: Publish to Github
