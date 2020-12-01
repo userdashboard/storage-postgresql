@@ -15,7 +15,7 @@ jobs:
           POSTGRES_DB: storage1
         ports:
           - 5432:5432
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 10s --health-retries 10
       postgres2:
         image: postgres:latest
         env:
@@ -24,7 +24,7 @@ jobs:
           POSTGRES_DB: storage2
         ports:
           - 5431:5432
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 10s --health-retries 10
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-node@v1
@@ -88,7 +88,7 @@ jobs:
         ORGANIZATIONS_STORAGE: "@userdashboard/storage-postgresql"
         ORGANIZATIONS_DATABASE_URL: "postgres://postgres:postgres@localhost:5432/storage1"
         NODE_OPTIONS: --preserve-symlinks
-    - name: Test as Dashboard and module storage using separate servers
+    - name: Test as Dashboard and module using two instances of storage
       run: ./node_modules/.bin/mocha --file main.js --bail --exit --recursive --timeout 90000000 $(find ./node_modules/@userdashboard/*/ -name "*.test.js" | grep -i -v [a-z]/node_modules | sort -k5.1,8.1 -t /)
       working-directory: /tmp/project
       env:
