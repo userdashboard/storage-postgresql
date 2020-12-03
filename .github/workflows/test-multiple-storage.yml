@@ -1,0 +1,79 @@
+name: test-multiple-storage
+
+on: [push]
+
+jobs:
+  test-multiple-storage:
+    runs-on: ubuntu-latest
+    services:
+      postgres1:
+        image: postgres:latest
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: storage1
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 10s --health-retries 10
+      postgres2:
+        image: postgres:latest
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: storage2
+        ports:
+          - 5431:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 10s --health-retries 10
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v1
+      with:
+        node-version: 14
+    - uses: zhulik/redis-action@1.1.0
+      with:
+        redis version: 5
+        number of databases: 1
+    - name: Optionally install Chromium via APT instead of puppeteer
+      run: |
+        if [ ! -z "$PUPPETEER_SKIP_CHROMIUM_DOWNLOAD" ]; then
+          APT_INSTALL="chromium gconf-service libasound2 libatk1.0-0 libc6 libcairo2 libcups2 libdbus-1-3 libexpat1 libfontconfig1 libgcc1 libgconf-2-4 libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 libnspr4 libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 ca-certificates fonts-liberation libappindicator1 libnss3 lsb-release xdg-utils wget"
+          if [ ! -z "$APT_PROXY" ]; then
+            echo "deb $APT_PROXY buster main" > /etc/apt/sources.list
+          fi
+          apt-get update
+          apt-get install -y $APT_INSTALL
+        fi
+    - name: Set up project
+      run: |
+        HERE=`pwd`
+        mkdir /tmp/project
+        cd /tmp/project
+        if [ -d /opt/hostedtoolcache/node/ ]; then
+          alias node=`find /opt/hostedtoolcache/node/ -maxdepth 4 -name node`
+          alias npm=`find /opt/hostedtoolcache/node/ -maxdepth 4 -name npm`
+        fi
+        npm init -y
+        npm install "$HERE" @userdashboard/dashboard @userdashboard/organizations @userdashboard/storage-redis mocha faker puppeteer
+        PACKAGE=`cat package.json`
+        PACKAGE=${PACKAGE/\"author\"\: \"\"/\"dashboard\": \{ \"modules\"\: \[\"@userdashboard/organizations\"\] \}}
+        echo $PACKAGE > package.json
+        echo "global.applicationPath = __dirname" > main.js
+        echo "require('@userdashboard/storage-postgresql/test-helper.js')" >> main.js
+    - name: Test as only storage for Dashboard and modules
+      run: ./node_modules/.bin/mocha --file main.js --bail --exit --recursive --timeout 90000000 $(find ./node_modules/@userdashboard/*/ -name "*.test.js" | grep -i -v [a-z0-9]/node_modules | sort -k5.1,8.1 -t /)
+      working-directory: /tmp/project
+      env:
+        NODE_ENV: testing
+        STORAGE: "@userdashboard/storage-postgresql"
+        DATABASE_URL: "postgres://postgres:postgres@localhost:5432/storage1"
+        NODE_OPTIONS: --preserve-symlinks
+    - name: Test as Dashboard and module using two instances of storage
+      run: ./node_modules/.bin/mocha --file main.js --bail --exit --recursive --timeout 90000000 $(find ./node_modules/@userdashboard/*/ -name "*.test.js" | grep -i -v [a-z0-9]/node_modules | sort -k5.1,8.1 -t /)
+      working-directory: /tmp/project
+      env:
+        NODE_ENV: testing
+        STORAGE: "@userdashboard/storage-postgresql"
+        DATABASE_URL: "postgres://postgres:postgres@localhost:5432/storage1"
+        ORGANIZATIONS_STORAGE: "@userdashboard/storage-postgresql"
+        ORGANIZATIONS_DATABASE_URL: "postgres://postgres:postgres@localhost:5431/storage2"
+        NODE_OPTIONS: --preserve-symlinks
