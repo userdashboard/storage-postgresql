@@ -60,7 +60,7 @@ jobs:
         echo "global.applicationPath = __dirname" > main.js
         echo "require('@userdashboard/storage-postgresql/test-helper.js')" >> main.js
     - name: Test as only storage for Dashboard and modules
-      run: ./node_modules/.bin/mocha --file main.js --bail --exit --recursive --timeout 90000000 $(find ./node_modules/@userdashboard/*/ -name "*.test.js" | grep -i -v [a-z]/node_modules | sort -k5.1,8.1 -t /)
+      run: ./node_modules/.bin/mocha --file main.js --bail --exit --recursive --timeout 90000000 $(find ./node_modules/@userdashboard/*/ -name "*.test.js" | grep -i -v [a-z0-9]/node_modules | sort -k5.1,8.1 -t /)
       working-directory: /tmp/project
       env:
         NODE_ENV: testing
@@ -68,7 +68,7 @@ jobs:
         DATABASE_URL: "postgres://postgres:postgres@localhost:5432/storage1"
         NODE_OPTIONS: --preserve-symlinks
     - name: Test as Dashboard storage with module on other type
-      run: ./node_modules/.bin/mocha --file main.js --bail --exit --recursive --timeout 90000000 $(find ./node_modules/@userdashboard/*/ -name "*.test.js" | grep -i -v [a-z]/node_modules | sort -k5.1,8.1 -t /)
+      run: ./node_modules/.bin/mocha --file main.js --bail --exit --recursive --timeout 90000000 $(find ./node_modules/@userdashboard/*/ -name "*.test.js" | grep -i -v [a-z0-9]/node_modules | sort -k5.1,8.1 -t /)
       working-directory: /tmp/project
       env:
         NODE_ENV: testing
@@ -78,7 +78,7 @@ jobs:
         ORGANIZATIONS_REDIS_URL: redis://localhost:6379
         NODE_OPTIONS: --preserve-symlinks
     - name: Test as module storage with Dashboard on other type
-      run: ./node_modules/.bin/mocha --file main.js --bail --exit --recursive --timeout 90000000 $(find ./node_modules/@userdashboard/*/ -name "*.test.js" | grep -i -v [a-z]/node_modules | sort -k5.1,8.1 -t /)
+      run: ./node_modules/.bin/mocha --file main.js --bail --exit --recursive --timeout 90000000 $(find ./node_modules/@userdashboard/*/ -name "*.test.js" | grep -i -v [a-z0-9]/node_modules | sort -k5.1,8.1 -t /)
       working-directory: /tmp/project
       env:
         NODE_ENV: testing
@@ -88,7 +88,7 @@ jobs:
         ORGANIZATIONS_DATABASE_URL: "postgres://postgres:postgres@localhost:5432/storage1"
         NODE_OPTIONS: --preserve-symlinks
     - name: Test as Dashboard and module using two instances of storage
-      run: ./node_modules/.bin/mocha --file main.js --bail --exit --recursive --timeout 90000000 $(find ./node_modules/@userdashboard/*/ -name "*.test.js" | grep -i -v [a-z]/node_modules | sort -k5.1,8.1 -t /)
+      run: ./node_modules/.bin/mocha --file main.js --bail --exit --recursive --timeout 90000000 $(find ./node_modules/@userdashboard/*/ -name "*.test.js" | grep -i -v [a-z0-9]/node_modules | sort -k5.1,8.1 -t /)
       working-directory: /tmp/project
       env:
         NODE_ENV: testing
