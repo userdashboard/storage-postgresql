@@ -34,9 +34,8 @@ jobs:
         redis version: 5
         number of databases: 1
       run: |
-        until pg_isready -h postgres-host -p 5432 -U postgres
+        until pg_isready -h localhost -p 5432 -U postgres
         do
-          echo "Waiting for postgres at: $pg_uri"
           sleep 2;
         done
     - name: Optionally install Chromium via APT instead of puppeteer

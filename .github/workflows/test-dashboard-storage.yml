@@ -35,9 +35,8 @@ jobs:
         number of databases: 1
     - name: Wait for PostgreSQL to be ready
       run: |
-        until pg_isready -h postgres-host -p 5432 -U postgres
+        until pg_isready -h localhost -p 5432 -U postgres
         do
-          echo "Waiting for postgres at: $pg_uri"
           sleep 2;
         done
     - name: Optionally install Chromium via APT instead of puppeteer
