@@ -29,6 +29,18 @@ jobs:
     - uses: actions/setup-node@v1
       with:
         node-version: 14
+    - name: Wait for PostgreSQL to be ready
+      run: |
+      until pg_isready -h postgres-host -p 5432 -U postgres
+      do
+        echo "Waiting for postgres at: $pg_uri"
+        sleep 2;
+      done
+      until pg_isready -h postgres-host -p 5431 -U postgres
+      do
+        echo "Waiting for postgres at: $pg_uri"
+        sleep 2;
+      done
     - name: Lint JavaScript source with standard.js
       run: |
         if [ ! -z "$NPM_PROXY" ]; then
