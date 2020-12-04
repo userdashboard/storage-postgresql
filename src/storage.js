@@ -2,6 +2,7 @@ const connectionString = require('pg-connection-string')
 const fs = require('fs')
 const path = require('path')
 const pg = require('pg')
+pg.defaults.poolIdleTimeout = 1000
 const util = require('util')
 
 module.exports = {
@@ -27,6 +28,7 @@ module.exports = {
     }
     setupSQLFile = fs.readFileSync(setupSQLFile).toString()
     return pool.connect((error, client) => {
+      console.log(error)
       if (error) {
         Log.error('error connecting', error)
         return callback(new Error('unknown-error'))
