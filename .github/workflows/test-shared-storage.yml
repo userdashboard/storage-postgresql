@@ -33,6 +33,7 @@ jobs:
       with:
         redis version: 5
         number of databases: 1
+    - name: Wait for PostgreSQL to be ready
       run: |
         until pg_isready -h localhost -p 5432 -U postgres
         do
