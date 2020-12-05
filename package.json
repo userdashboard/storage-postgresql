@@ -1,7 +1,6 @@
 {
   "dependencies": {
-    "pg": "^8.5.1",
-    "@userdashboard/dashboard": ">=1"
+    "pg": "^8.5.1"
   },
   "description": "Use PostgreSQL as storage for Dashboard",
   "engines": {
