@@ -1,5 +1,3 @@
-const fs = require('fs')
-const path = require('path')
 const pg = require('pg')
 const connectionString = require('pg-connection-string')
 const util = require('util')
@@ -9,14 +7,7 @@ module.exports = {
     const databaseURL = process.env[`${moduleName}_DATABASE_URL`] || process.env.DATABASE_URL || 'postgres://localhost:5432/postgres'
     const connectionConfig = connectionString.parse(databaseURL)
     const pool = new pg.Pool(connectionConfig)
-    const dashboardPath1 = path.join(global.applicationPath, 'node_modules/@userdashboard/dashboard/src/log.js')
-    let Log
-    if (fs.existsSync(dashboardPath1)) {
-      Log = require(dashboardPath1)('postgresql-list')
-    } else {
-      const dashboardPath2 = path.join(global.applicationPath, 'src/log.js')
-      Log = require(dashboardPath2)('postgresql-list')
-    }
+    const Log = require('@userdashboard/dashboard/src/log.js')('postgresql-list')
     const container = {
       add: util.promisify((path, objectid, callback) => {
         return pool.query('INSERT INTO lists(path, objectid) VALUES ($1, $2)', [path, objectid], (error) => {
