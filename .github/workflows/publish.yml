@@ -6,12 +6,12 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     services:
-      postgres1:
+      postgres:
         image: postgres:latest
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: storage1
+          POSTGRES_DB: storage
         ports:
           - 5432:5432
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
@@ -34,10 +34,6 @@ jobs:
           npm install standard -g
         fi        
         standard
-    - uses: zhulik/redis-action@1.1.0
-      with:
-        redis version: 5
-        number of databases: 1
     - name: Optionally install Chromium via APT instead of puppeteer
       run: |
         if [ ! -z "$PUPPETEER_SKIP_CHROMIUM_DOWNLOAD" ]; then
@@ -72,7 +68,7 @@ jobs:
           alias npm=`find /opt/hostedtoolcache/node/ -maxdepth 4 -name npm`
         fi
         npm init -y
-        npm install "$HERE" @userdashboard/dashboard @userdashboard/organizations @userdashboard/storage-postgresql mocha faker puppeteer
+        npm install "$HERE" @userdashboard/dashboard @userdashboard/organizations mocha faker puppeteer
         PACKAGE=`cat package.json`
         PACKAGE=${PACKAGE/\"author\"\: \"\"/\"dashboard\": \{ \"modules\"\: \[\"@userdashboard/organizations\"\] \}}
         echo $PACKAGE > package.json
@@ -89,7 +85,7 @@ jobs:
       env:
         NODE_ENV: testing
         STORAGE: "@userdashboard/storage-postgresql"
-        DATABASE_URL: "postgres://postgres:postgres@localhost:5432/storage1"
+        DATABASE_URL: "postgres://postgres:postgres@localhost:5432/storage"
     - name: Publish to Github
       uses: stefanzweifel/git-auto-commit-action@v4.1.6
       with:
