@@ -1,6 +1,9 @@
 {
   "dependencies": {
     "pg": "^8.5.1"
+  }, 
+  "peerDependencies": {
+    "@userdashboard/dashboard": "1.0.0 - 9999.9999.9999"
   },
   "description": "Use PostgreSQL as storage for Dashboard",
   "engines": {
