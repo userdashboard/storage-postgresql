@@ -14,7 +14,7 @@ module.exports = {
     const connectionConfig = connectionString.parse(databaseURL)
     const pool = new pg.Pool(connectionConfig)
     const Log = require('@userdashboard/dashboard/src/log.js')('postgresql')
-    const setupSQLFile = fs.readFileSync('./setup.qsl').toString()
+    const setupSQLFile = fs.readFileSync('./setup.sql').toString()
     return pool.connect((error, client) => {
       console.log(error)
       if (error) {
