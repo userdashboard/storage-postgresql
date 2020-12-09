@@ -72,7 +72,7 @@ jobs:
           alias npm=`find /opt/hostedtoolcache/node/ -maxdepth 4 -name npm`
         fi
         npm init -y
-        npm install "$HERE" @userdashboard/dashboard @userdashboard/organizations @userdashboard/storage-redis mocha faker puppeteer
+        npm install "$HERE" @userdashboard/dashboard @userdashboard/organizations @userdashboard/storage-postgresql mocha faker puppeteer
         PACKAGE=`cat package.json`
         PACKAGE=${PACKAGE/\"author\"\: \"\"/\"dashboard\": \{ \"modules\"\: \[\"@userdashboard/organizations\"\] \}}
         echo $PACKAGE > package.json
