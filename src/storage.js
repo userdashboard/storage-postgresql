@@ -1,5 +1,4 @@
 const connectionString = require('pg-connection-string')
-const fs = require('fs')
 const pg = require('pg')
 pg.defaults.poolIdleTimeout = 1000
 const util = require('util')
@@ -14,14 +13,27 @@ module.exports = {
     const connectionConfig = connectionString.parse(databaseURL)
     const pool = new pg.Pool(connectionConfig)
     const Log = require('@userdashboard/dashboard/src/log.js')('postgresql')
-    const setupSQLFile = fs.readFileSync('./setup.sql').toString()
+    const setupSQL = `CREATE TABLE IF NOT EXISTS lists (
+      listid BIGSERIAL PRIMARY KEY,
+      path VARCHAR(1000),
+      objectid VARCHAR(1000),
+      created TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    );
+    
+    CREATE TABLE IF NOT EXISTS objects (
+      path VARCHAR(1000) PRIMARY KEY,
+      contents BYTEA,
+      created TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    );
+    
+    CREATE INDEX IF NOT EXISTS index_lists_path ON lists(path);
+    CREATE INDEX IF NOT EXISTS index_lists_objectid ON lists(objectid);`
     return pool.connect((error, client) => {
-      console.log(error)
       if (error) {
         Log.error('error connecting', error)
         return callback(new Error('unknown-error'))
       }
-      return client.query(setupSQLFile, () => {
+      return client.query(setupSQL, () => {
         client.release(true)
         const configuration = {
           exists: util.promisify((file, callback) => {
@@ -156,7 +168,7 @@ module.exports = {
                 Log.error('error connecting', error)
                 return callback(new Error('unknown-error'))
               }
-              return client.query('DROP TABLE IF EXISTS objects; DROP TABLE IF EXISTS lists; ' + setupSQLFile, (error) => {
+              return client.query('DROP TABLE IF EXISTS objects; DROP TABLE IF EXISTS lists; ' + setupSQL, (error) => {
                 client.release(true)
                 if (error) {
                   Log.error('error flushing', error)
