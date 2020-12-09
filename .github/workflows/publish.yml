@@ -86,7 +86,6 @@ jobs:
         NODE_ENV: testing
         STORAGE: "@userdashboard/storage-postgresql"
         DATABASE_URL: "postgres://postgres:postgres@localhost:5432/storage"
-        LOG_LEVEL: info,error,warn,log
     - name: Publish to Github
       uses: stefanzweifel/git-auto-commit-action@v4.1.6
       with:
